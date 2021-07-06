@@ -1,5 +1,5 @@
 # Winter School Project: Learning Semantics of 3D point Clouds
-This is a group project for the UTS Winter School on SLAM for Deformable Objects, 2021.  
+This is a group project for the UTS Winter School on SLAM for Deformable Objects, 2021  
 
 ## Problem Description
 Understanding what objects are present in a scene or what the constituent parts of an
