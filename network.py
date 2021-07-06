@@ -145,6 +145,7 @@ def pointnet_segmenter(inputs, labels):
     # Todo: concatenate these features with the earlier features (f)
     # you can also use skip connections if you like
     f = 
+    
     # extract features using some Convolutional Layers - with batch normalization and RELU activation
     x = conv_bn(f,256)
     x = conv_bn(x,128)
