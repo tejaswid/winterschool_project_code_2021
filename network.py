@@ -65,6 +65,7 @@ class CustomRegularizer(keras.regularizers.Regularizer):
         """
         self.dim = dim
         self.weight = weight
+        self.eye = tf.eye(dim)
 
     def __call__(self, x):
         # TODO: define the custom regularizer here
@@ -75,7 +76,7 @@ class CustomRegularizer(keras.regularizers.Regularizer):
         # Compute (I-outerproduct)^2 element wise. use tf.square()
         # Apply weight
         # ACompute reduce sum using tf.reduce_sum()
-        output = tf.reduce_sum(self.weight * tf.square(xxt - self.eye))
+        return tf.reduce_sum(self.weight * tf.square(xxt - self.eye))
         return output
 
 def pointnet_classifier(inputs, num_classes):
@@ -113,18 +114,15 @@ def pointnet_classifier(inputs, num_classes):
     return outputs
 
 
-def pointnet_segmenter(inputs, labels):
+def pointnet_segmenter(inputs, num_classes=10):
     """
     This is the semantic segmentation version of Pointnet
     :param inputs: input point cloud
     :type inputs: tensor
-    :param labels: labels for each point of the point cloud
-    :type labels: tensor
-    :return: predicted labels for each point of the point cloud
+    :param num_classes: number of classes
+    :type num_classes: int
     :rtype: tensor
     """
-    # Todo: get the class numbers
-    num_classes = 
     # build the network using the following layers
     # apply tnet to the input data
     x = tnet(inputs, 3)
@@ -139,16 +137,16 @@ def pointnet_segmenter(inputs, labels):
     x = conv_bn(x, 512)    
     # apply 1D global max pooling
     global_feature = layers.GlobalMaxPooling1D()(x)
-    
     # Todo: concatenate these features with the earlier features (f)
     # you can also use skip connections if you like
-    f = 
-    
+    global_feature = tf.expand_dims(input=global_feature,axis=1)
+    global_feature = tf.tile(input=global_feature, multiples=[1,300,1])
+    f = layers.concatenate([local_feature,global_feature])
     # extract features using some Convolutional Layers - with batch normalization and RELU activation
     x = conv_bn(f,256)
     x = conv_bn(x,128)
     x = conv_bn(x, 64)
-    outputs = conv_bn(x,num_classes)
     # return the output
+    outputs = layers.Dense(num_classes, activation="softmax")(x)
     
     return outputs
