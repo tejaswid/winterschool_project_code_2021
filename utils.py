@@ -1,3 +1,4 @@
+import enum
 import os
 import glob
 import trimesh
@@ -5,6 +6,8 @@ import trimesh.sample
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
 
 def create_point_cloud_dataset(data_dir, num_points_per_cloud=1024):
     """
@@ -33,23 +36,39 @@ def create_point_cloud_dataset(data_dir, num_points_per_cloud=1024):
         print("processing class: {}".format(os.path.basename(folder)))
 
         # TODO: Fill this part, get the name of the folder (class) and save it
-        class_ids
+        class_ids[class_id]=os.path.basename(folder)
 
         # get the files in the train folder
         train_files = glob.glob(os.path.join(folder, "train/*"))
         for f in train_files:
             # TODO: Fill this part
-            train_pc
-            train_labels
+            points = trimesh.sample.sample_surface(trimesh.load(f),num_points_per_cloud)[0]
+            train_pc.append(points)
+            train_labels.append(class_id)
         # get the files in the test folder
         test_files = glob.glob(os.path.join(folder, "test/*"))
         for f in test_files:
             # TODO: FIll this part
-            test_pc
-            test_labels
+            points = trimesh.sample.sample_surface(trimesh.load(f),num_points_per_cloud)[0]
+            test_pc.append(points)
+            test_labels.append(class_id)
+
+    encoded_train_labels = []
+    for idx, label in enumerate(train_labels):
+        one_hot = np.zeros(10)
+        one_hot[label] = 1.
+        encoded_train_labels.append(one_hot)
+    encoded_train_labels = np.array(encoded_train_labels)
+
+    encoded_test_labels = []
+    for idx, label in enumerate(train_labels):
+        one_hot = np.zeros(10)
+        one_hot[label] = 1.
+        encoded_test_labels.append(one_hot)
+    encoded_test_labels = np.array(encoded_test_labels)
 
     return (np.array(train_pc), np.array(test_pc),
-            np.array(train_labels), np.array(test_labels), class_ids)
+            np.array(encoded_train_labels), np.array(encoded_test_labels), class_ids)
 
 
 def visualize_cloud(point_cloud):
@@ -81,3 +100,5 @@ def add_noise_and_shuffle(point_cloud, label):
     point_cloud = tf.random.shuffle(point_cloud)
     return point_cloud, label
 
+# if __name__=='__main__':
+#     a = create_point_cloud_dataset('ModelNet10/')
